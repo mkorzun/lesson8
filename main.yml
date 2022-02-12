@@ -4,8 +4,6 @@
   become: yes
 
   tasks:
-  - name: Upload dockerfile to build host
-    synchronize: src=dockerfiles/build dest=/tmp
   - name: Install docker and some dependencies
     apt:
      name: python3-pip, docker.io
@@ -23,6 +21,8 @@
   gather_facts: no
   become: yes
   tasks:
+  - name: Upload dockerfile to build host
+    synchronize: src=dockerfiles/build dest=/tmp
   - name: Build container image
     docker_image:
      name: build_boxfuse
@@ -51,7 +51,30 @@
      dest: /tmp/hello-1.0.war
      flat: yes
 
-
+- hosts: prod
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: Upload dockerfile to prod host
+    synchronize: src=dockerfiles/prod dest=/tmp
+  - name: Copy app
+    copy:
+     src: /tmp/hello-1.0.war
+     dest: /opt/my_boxfuse
+  - name: Build container image
+    docker_image:
+     name: build_tomcat
+     build:
+     path: /tmp/prod
+     state: present
+  - name: Start docker container
+    docker_container:
+     name: my_tomcat
+     image: build_tomcat
+     auto_remove: no
+     state: started
+     volumes:
+      - /opt/my_boxfuse:/opt/tomcat/webapps
 
 
 
