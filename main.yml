@@ -60,7 +60,7 @@
   - name: Copy app
     copy:
      src: /tmp/hello-1.0.war
-     dest: /opt/my_boxfuse
+     dest: /opt/my_boxfuse/
   - name: Build container image
     docker_image:
      name: build_tomcat
@@ -73,6 +73,9 @@
      image: build_tomcat
      auto_remove: no
      state: started
+     restart: yes
+     ports:
+      - "8080:8080"
      volumes:
       - /opt/my_boxfuse:/opt/tomcat/webapps
 
